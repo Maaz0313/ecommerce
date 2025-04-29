@@ -1,0 +1,27 @@
+# Laravel specific
+/vendor
+/node_modules
+/public/storage
+/storage/*.key
+.env
+.phpunit.result.cache
+Homestead.yaml
+Homestead.json
+/.vscode
+
+# IDE specific
+.idea
+*.swp
+*.swo
+*.swn
+*.bak
+*.tmp
+*.log
+*.orig
+*.rej
+*.sublime-project
+*.sublime-workspace
+
+# OS generated files
+.DS_Store
+Thumbs.db
