@@ -7,8 +7,6 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  console.log('Rendering ProductCard with product:', product);
-
   const handleAddToCart = () => {
     CartService.addToCart(product, 1);
     // Trigger storage event to update cart count in Layout

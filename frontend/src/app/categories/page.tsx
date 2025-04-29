@@ -5,8 +5,6 @@ import { CategoryService, Category } from '../../services';
 import { CategoryCard } from '../../components';
 
 export default function CategoriesPage() {
-  console.log('Rendering CategoriesPage component...');
-
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);

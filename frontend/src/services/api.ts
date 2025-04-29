@@ -22,10 +22,7 @@ api.interceptors.request.use(
 
 // Add a response interceptor to handle errors
 api.interceptors.response.use(
-  (response) => {
-    console.log('API Response interceptor:', response.config.url, response.data);
-    return response;
-  },
+  (response) => response,
   (error) => {
     console.error('API Error interceptor:', error.config?.url, error.message, error.response?.data);
 

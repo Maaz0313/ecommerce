@@ -14,7 +14,6 @@ export default function ProductsPage() {
       try {
         setLoading(true);
         const data = await ProductService.fetchProducts();
-        console.log('Fetched products data:', data);
         setProducts(data.data);
         setError(null);
       } catch (err) {

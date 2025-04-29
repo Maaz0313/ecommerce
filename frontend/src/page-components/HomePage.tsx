@@ -6,7 +6,6 @@ import { ProductService, CategoryService, Product, Category } from '../services'
 import { ProductCard, CategoryCard } from '../components';
 
 const HomePage: React.FC = () => {
-  console.log('Rendering HomePage component...');
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -16,13 +15,10 @@ const HomePage: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        console.log('Fetching featured products and categories...');
         const [productsData, categoriesData] = await Promise.all([
           ProductService.getFeaturedProducts(),
           CategoryService.getAllCategories(),
         ]);
-        console.log('Featured Products API Response:', productsData);
-        console.log('Categories API Response:', categoriesData);
         setFeaturedProducts(productsData.data);
         setCategories(categoriesData.data);
         setError(null);
@@ -36,11 +32,6 @@ const HomePage: React.FC = () => {
 
     fetchData();
   }, []);
-
-  useEffect(() => {
-    console.log('Updated featuredProducts state:', featuredProducts);
-    console.log('Updated categories state:', categories);
-  }, [featuredProducts, categories]);
 
   if (loading) {
     return (
