@@ -14,16 +14,30 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       setLoading(true);
       setError(null);
-      
+
       await AuthService.login({ email, password });
+
+      // Manually dispatch both a storage event and a custom event to notify components
+      // The storage event only works across tabs, while our custom event works within the same tab
+      window.dispatchEvent(new Event('storage'));
+      window.dispatchEvent(new Event('storage-update'));
+
+      // Redirect to home page or profile page based on verification status
+      // The verification notice will be shown in the layout regardless
       router.push('/');
     } catch (err: any) {
       console.error('Login error:', err);
-      setError(err.response?.data?.message || 'Invalid email or password');
+
+      // Check if this is an email verification error
+      if (err.response?.data?.email_verified === false) {
+        setError('Email not verified. Please check your email for verification link or go to dashboard to resend it.');
+      } else {
+        setError(err.response?.data?.message || 'Invalid email or password');
+      }
     } finally {
       setLoading(false);
     }
@@ -57,7 +71,7 @@ const LoginPage: React.FC = () => {
               </div>
             </div>
           )}
-          
+
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">

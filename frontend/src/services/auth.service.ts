@@ -5,6 +5,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  email_verified_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -24,52 +25,79 @@ export interface RegisterData {
 export interface AuthResponse {
   success: boolean;
   message: string;
-  data: {
+  data?: {
     user: User;
     token: string;
+    email_verified: boolean;
   };
+  email_verified?: boolean;
 }
 
 const AuthService = {
   login: async (credentials: LoginCredentials): Promise<User> => {
     try {
-      const response = await api.post<AuthResponse>('/login', credentials);
-      
-      if (response.data.success) {
+      // First, get the CSRF cookie from Laravel Sanctum
+      await api.get('/sanctum/csrf-cookie');
+
+      // Then make the login request
+      const response = await api.post<AuthResponse>('/api/login', credentials);
+
+      if (response.data.success && response.data.data) {
         const { user, token } = response.data.data;
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
+
+        // Dispatch both a storage event and a custom event to notify components
+        // The storage event only works across tabs, while our custom event works within the same tab
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new Event('storage-update'));
+
         return user;
       } else {
         throw new Error(response.data.message);
       }
     } catch (error) {
+      console.error('Login error details:', error);
       throw error;
     }
   },
 
   register: async (data: RegisterData): Promise<User> => {
     try {
-      // Use the configured Axios instance to fetch the CSRF token
+      // First, get the CSRF cookie from Laravel Sanctum
       await api.get('/sanctum/csrf-cookie');
-      const response = await api.post<AuthResponse>('/register', data);
-      
-      if (response.data.success) {
+
+      // Then make the registration request
+      // The API route is /api/register because it's in api.php
+      const response = await api.post<AuthResponse>('/api/register', data);
+
+      if (response.data.success && response.data.data) {
         const { user, token } = response.data.data;
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
+
+        // Dispatch both a storage event and a custom event to notify components
+        // The storage event only works across tabs, while our custom event works within the same tab
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new Event('storage-update'));
+
         return user;
       } else {
         throw new Error(response.data.message);
       }
     } catch (error) {
+      console.error('Registration error details:', error);
       throw error;
     }
   },
 
   logout: async (): Promise<void> => {
     try {
-      await api.post('/logout');
+      // First, get the CSRF cookie from Laravel Sanctum
+      await api.get('/sanctum/csrf-cookie');
+
+      // Then make the logout request
+      await api.post('/api/logout');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
     } catch (error) {
@@ -90,6 +118,72 @@ const AuthService = {
 
   isAuthenticated: (): boolean => {
     return !!localStorage.getItem('token');
+  },
+
+  isEmailVerified: (): boolean => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      const user = JSON.parse(userStr) as User;
+      return !!user.email_verified_at;
+    }
+    return false;
+  },
+
+  resendVerificationEmail: async (): Promise<void> => {
+    try {
+      // Check if user is authenticated
+      if (!AuthService.isAuthenticated()) {
+        throw new Error('You must be logged in to resend verification email');
+      }
+
+      console.log('Attempting to resend verification email...');
+
+      // First, get the CSRF cookie from Laravel Sanctum
+      const csrfResponse = await api.get('/sanctum/csrf-cookie');
+      console.log('CSRF cookie response:', csrfResponse.status);
+
+      // Then make the request to resend verification email
+      console.log('Sending verification email request...');
+      const response = await api.post('/api/email/verification-notification');
+      console.log('Verification email response:', response.status, response.data);
+
+      return response.data;
+    } catch (error) {
+      console.error('Resend verification email error:', error);
+      throw error;
+    }
+  },
+
+  refreshUserData: async (): Promise<User | null> => {
+    try {
+      // Check if user is authenticated
+      if (!AuthService.isAuthenticated()) {
+        return null;
+      }
+
+      // Get user data from the API
+      const response = await api.get('/api/user');
+      console.log('Refresh user data response:', response.data);
+
+      if (response.data && response.data.success && response.data.data && response.data.data.user) {
+        const userData = response.data.data.user;
+
+        // Update the user data in localStorage
+        localStorage.setItem('user', JSON.stringify(userData));
+
+        // Dispatch both a storage event and a custom event to notify components
+        // The storage event only works across tabs, while our custom event works within the same tab
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new Event('storage-update'));
+
+        return userData;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Refresh user data error:', error);
+      return null;
+    }
   },
 };
 

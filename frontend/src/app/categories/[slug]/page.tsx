@@ -8,7 +8,7 @@ import { ProductCard } from '../../../components';
 export default function CategoryDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
-  
+
   const [category, setCategory] = useState<Category | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -18,27 +18,21 @@ export default function CategoryDetailPage() {
     const fetchCategoryAndProducts = async () => {
       try {
         setLoading(true);
-        
-        // Get all categories
-        const categories = await CategoryService.getAllCategories();
-        const foundCategory = categories.find(c => c.slug === slug);
-        
-        if (foundCategory) {
-          setCategory(foundCategory);
-          
-          // Get all products
-          const allProducts = await ProductService.getAllProducts();
-          
-          // Filter products by category
-          const categoryProducts = allProducts.filter(
-            product => product.category_id === foundCategory.id
-          );
-          
-          setProducts(categoryProducts);
-          setError(null);
-        } else {
-          setError('Category not found');
-        }
+
+        // Get category by slug
+        const foundCategory = await CategoryService.getCategoryBySlug(slug);
+        setCategory(foundCategory);
+
+        // Get all products
+        const allProducts = await ProductService.getAllProducts();
+
+        // Filter products by category
+        const categoryProducts = allProducts.filter(
+          product => product.category_id === foundCategory.id
+        );
+
+        setProducts(categoryProducts);
+        setError(null);
       } catch (err) {
         console.error('Error fetching category and products:', err);
         setError('Failed to load category. Please try again later.');
@@ -92,7 +86,7 @@ export default function CategoryDetailPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Products in this category</h2>
-        
+
         {products.length > 0 ? (
           <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-4">
             {products.map((product) => (

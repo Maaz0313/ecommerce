@@ -17,28 +17,33 @@ const RegisterPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (password !== passwordConfirmation) {
       setError('Passwords do not match');
       return;
     }
-    
+
     try {
       setLoading(true);
       setError(null);
       setErrors({});
-      
+
       await AuthService.register({
         name,
         email,
         password,
         password_confirmation: passwordConfirmation,
       });
-      
+
+      // Manually dispatch both a storage event and a custom event to notify components
+      // The storage event only works across tabs, while our custom event works within the same tab
+      window.dispatchEvent(new Event('storage'));
+      window.dispatchEvent(new Event('storage-update'));
+
       router.push('/');
     } catch (err: any) {
       console.error('Registration error:', err);
-      
+
       if (err.response?.data?.errors) {
         setErrors(err.response.data.errors);
       } else {
@@ -77,7 +82,7 @@ const RegisterPage: React.FC = () => {
               </div>
             </div>
           )}
-          
+
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">

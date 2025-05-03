@@ -22,6 +22,12 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+// Email verification routes
+Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])->name('verification.verify');
+Route::post('/email/verification-notification', [AuthController::class, 'resendVerificationEmail'])
+    ->middleware(['auth:sanctum', 'throttle:6,1'])
+    ->name('verification.send');
+
 // Public product and category routes
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);

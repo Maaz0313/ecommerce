@@ -18,15 +18,9 @@ export default function ProductDetailPage() {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const products = await ProductService.getAllProducts();
-        const foundProduct = products.find(p => p.slug === slug);
-
-        if (foundProduct) {
-          setProduct(foundProduct);
-          setError(null);
-        } else {
-          setError('Product not found');
-        }
+        const foundProduct = await ProductService.getProductBySlug(slug);
+        setProduct(foundProduct);
+        setError(null);
       } catch (err) {
         console.error('Error fetching product:', err);
         setError('Failed to load product. Please try again later.');

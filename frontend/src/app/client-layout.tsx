@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ShoppingCartIcon, UserIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { AuthService, CartService } from '../services';
+import CsrfToken from '../components/CsrfToken';
+import VerificationNotice from '../components/VerificationNotice';
+import { refreshUserData as refreshUserDataUtil, addStorageEventListeners } from '../utils/auth-utils';
 
 interface ClientLayoutProps {
   children: React.ReactNode;
@@ -13,23 +16,74 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);
+  const [showVerificationNotice, setShowVerificationNotice] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
-  useEffect(() => {
+  // Function to update authentication state from localStorage
+  const updateAuthState = () => {
     // Check authentication status
-    setIsAuthenticated(AuthService.isAuthenticated());
-    
+    const isAuth = AuthService.isAuthenticated();
+    setIsAuthenticated(isAuth);
+
+    // Get current user and check verification status
+    if (isAuth) {
+      const user = AuthService.getCurrentUser();
+      setCurrentUser(user);
+
+      // Show verification notice if email is not verified
+      if (user && !AuthService.isEmailVerified()) {
+        setShowVerificationNotice(true);
+      } else {
+        setShowVerificationNotice(false);
+      }
+    } else {
+      setCurrentUser(null);
+      setShowVerificationNotice(false);
+    }
+
     // Get cart item count
     setCartItemCount(CartService.getItemCount());
-    
-    // Add event listener for cart updates
+  };
+
+  // Function to refresh user data from the backend
+  const refreshUserData = async () => {
+    try {
+      if (AuthService.isAuthenticated()) {
+        console.log('Refreshing user data from backend...');
+        // Use the shared utility function
+        await refreshUserDataUtil();
+        updateAuthState();
+      }
+    } catch (error) {
+      console.error('Failed to refresh user data:', error);
+      // Still update from localStorage even if API call fails
+      updateAuthState();
+    }
+  };
+
+  useEffect(() => {
+    // Initial update of authentication state and refresh from backend
+    refreshUserData();
+
+    // Add event listener for cart updates and auth changes
     const handleStorageChange = () => {
-      setCartItemCount(CartService.getItemCount());
+      // Update all authentication and cart state
+      updateAuthState();
     };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
+
+    // Set up an interval to periodically refresh user data
+    const refreshInterval = setInterval(() => {
+      if (AuthService.isAuthenticated()) {
+        refreshUserData();
+      }
+    }, 60000); // Refresh every minute
+
+    // Set up event listeners using the shared utility function
+    const cleanup = addStorageEventListeners(handleStorageChange);
+
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      cleanup();
+      clearInterval(refreshInterval);
     };
   }, []);
 
@@ -41,6 +95,9 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* CSRF Token Component */}
+      <CsrfToken />
+
       {/* Header */}
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -85,13 +142,14 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                 <>
                   <Link
                     href="/profile"
-                    className="p-1 rounded-full text-gray-400 hover:text-gray-500"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50"
                   >
-                    <UserIcon className="h-6 w-6" aria-hidden="true" />
+                    <UserIcon className="h-5 w-5 mr-2" aria-hidden="true" />
+                    My Account
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 cursor-pointer"
                   >
                     Logout
                   </button>
@@ -116,7 +174,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
             <div className="-mr-2 flex items-center sm:hidden">
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 cursor-pointer"
               >
                 <span className="sr-only">Open main menu</span>
                 {isMenuOpen ? (
@@ -168,14 +226,14 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                     className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Profile
+                    My Account
                   </Link>
                   <button
                     onClick={() => {
                       handleLogout();
                       setIsMenuOpen(false);
                     }}
-                    className="block w-full text-left pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
+                    className="block w-full text-left pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 cursor-pointer"
                   >
                     Logout
                   </button>
@@ -206,6 +264,15 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       {/* Main content */}
       <main className="flex-grow">
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          {/* Verification notice */}
+          {showVerificationNotice && currentUser && (
+            <VerificationNotice
+              email={currentUser.email}
+              showDismiss={true}
+              onDismiss={() => setShowVerificationNotice(false)}
+            />
+          )}
+
           {children}
         </div>
       </main>
