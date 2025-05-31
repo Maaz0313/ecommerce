@@ -1,9 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { ProductService, CategoryService, Product, Category } from '../services';
-import { ProductCard, CategoryCard } from '../components';
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import {
+  ProductService,
+  CategoryService,
+  Product,
+  Category,
+} from "../services";
+import { initializeApi } from "../services/api";
+import { ProductCard, CategoryCard } from "../components";
 
 const HomePage: React.FC = () => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -15,16 +21,33 @@ const HomePage: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
+
+        // Initialize API first
+        await initializeApi();
+
         const [productsData, categoriesData] = await Promise.all([
           ProductService.getFeaturedProducts(),
           CategoryService.getAllCategories(),
         ]);
-        setFeaturedProducts(productsData.data);
-        setCategories(categoriesData.data);
+
+        // Safely access the data arrays
+        if (productsData && productsData.data) {
+          setFeaturedProducts(
+            Array.isArray(productsData.data) ? productsData.data : []
+          );
+        }
+
+        if (categoriesData && categoriesData.data) {
+          setCategories(
+            Array.isArray(categoriesData.data) ? categoriesData.data : []
+          );
+        }
+
         setError(null);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError('Failed to load data. Please try again later.');
+      } catch (err: any) {
+        setError("Failed to load data. Please try again later.");
+        setFeaturedProducts([]);
+        setCategories([]);
       } finally {
         setLoading(false);
       }
@@ -46,8 +69,16 @@ const HomePage: React.FC = () => {
       <div className="bg-red-50 border-l-4 border-red-400 p-4 my-4">
         <div className="flex">
           <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            <svg
+              className="h-5 w-5 text-red-400"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clipRule="evenodd"
+              />
             </svg>
           </div>
           <div className="ml-3">
@@ -68,7 +99,8 @@ const HomePage: React.FC = () => {
               <span className="block">Welcome to EcommerceApp</span>
             </h1>
             <p className="mt-4 text-lg leading-6 text-indigo-100">
-              Discover amazing products at great prices. Shop now and enjoy fast delivery!
+              Discover amazing products at great prices. Shop now and enjoy fast
+              delivery!
             </p>
             <div className="mt-8 flex justify-center">
               <div className="inline-flex rounded-md shadow">
@@ -87,8 +119,13 @@ const HomePage: React.FC = () => {
       {/* Featured products section */}
       <div className="mt-12">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Featured Products</h2>
-          <Link href="/products" className="text-indigo-600 hover:text-indigo-500">
+          <h2 className="text-2xl font-bold text-gray-900">
+            Featured Products
+          </h2>
+          <Link
+            href="/products"
+            className="text-indigo-600 hover:text-indigo-500"
+          >
             View all
           </Link>
         </div>
@@ -107,7 +144,10 @@ const HomePage: React.FC = () => {
       <div className="mt-12">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Shop by Category</h2>
-          <Link href="/categories" className="text-indigo-600 hover:text-indigo-500">
+          <Link
+            href="/categories"
+            className="text-indigo-600 hover:text-indigo-500"
+          >
             View all
           </Link>
         </div>

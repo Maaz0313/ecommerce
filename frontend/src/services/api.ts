@@ -2,9 +2,9 @@ import axios from 'axios';
 
 // Create an Axios instance with the base configuration
 const api = axios.create({
-    // Use relative URLs to leverage Next.js API rewrites
-    // This ensures requests go through the Next.js proxy
-    baseURL: '',
+    // Use relative URLs to leverage the custom API proxy route
+    // This ensures requests go through the Next.js proxy at /api/[...proxy]
+    baseURL: '/api',
     withCredentials: true, // This is important for cookies to be sent
     headers: {
         'X-Requested-With': 'XMLHttpRequest', // Required for Laravel to identify AJAX requests
@@ -13,12 +13,26 @@ const api = axios.create({
     }
 });
 
+// Function to fetch CSRF token
+const fetchCSRFToken = async () => {
+    try {
+        // Use a separate axios instance for Sanctum routes
+        await axios.get('/sanctum/csrf-cookie', {
+            withCredentials: true,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            }
+        });
+        return true;
+    } catch (error: any) {
+        return false;
+    }
+};
+
 // Add a request interceptor to include the auth token in all requests
 api.interceptors.request.use(
     config => {
-        // Log the request URL for debugging
-        console.log(`Making request to: ${config.method?.toUpperCase()} ${config.url}`);
-
         const token = localStorage.getItem('token');
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
@@ -41,5 +55,15 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+// Initialize API by fetching CSRF token
+export const initializeApi = async () => {
+    try {
+        await fetchCSRFToken();
+        return true;
+    } catch (error: any) {
+        return false;
+    }
+};
 
 export default api;

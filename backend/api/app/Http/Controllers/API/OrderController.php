@@ -43,6 +43,7 @@ class OrderController extends Controller
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
+            'stripe_payment_id' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -60,8 +61,15 @@ class OrderController extends Controller
             $user = $request->user();
             $items = $request->items;
             $totalAmount = 0;
+            $paymentStatus = $request->payment_method === 'credit_card' ? 'paid' : 'pending';
 
-            // Calculate total amount and check product availability
+            // Calculate total amount
+            foreach ($items as $item) {
+                $product = Product::findOrFail($item['product_id']);
+                $totalAmount += $product->price * $item['quantity'];
+            }
+
+            // Check product availability
             foreach ($items as $item) {
                 $product = Product::findOrFail($item['product_id']);
 
@@ -72,8 +80,6 @@ class OrderController extends Controller
                         'message' => "Product '{$product->name}' is out of stock. Available quantity: {$product->quantity}"
                     ], 422);
                 }
-
-                $totalAmount += $product->price * $item['quantity'];
             }
 
             // Create order
@@ -82,7 +88,7 @@ class OrderController extends Controller
                 'total_amount' => $totalAmount,
                 'status' => 'pending',
                 'payment_method' => $request->payment_method,
-                'payment_status' => 'pending',
+                'payment_status' => $paymentStatus,
                 'shipping_address' => $request->shipping_address,
                 'shipping_city' => $request->shipping_city,
                 'shipping_state' => $request->shipping_state,

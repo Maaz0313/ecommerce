@@ -1,4 +1,3 @@
-import axios from 'axios';
 import api from './api';
 
 export interface Product {
@@ -34,7 +33,7 @@ export interface ProductResponse {
   message?: string;
 }
 
-export const fetchProducts = async () => {
+export const fetchProducts = async (): Promise<ProductResponse> => {
   try {
     const response = await api.get<ProductResponse>('/products');
     return response.data;
@@ -43,7 +42,7 @@ export const fetchProducts = async () => {
   }
 };
 
-export const getFeaturedProducts = async () => {
+export const getFeaturedProducts = async (): Promise<ProductResponse> => {
   try {
     const response = await api.get<ProductResponse>('/products?featured=true');
     return response.data;
@@ -67,6 +66,7 @@ export const getProductBySlug = async (slug: string): Promise<Product> => {
 
     return product;
   } catch (error) {
+    console.error('Error fetching product by slug:', error);
     throw error;
   }
 };
@@ -76,6 +76,7 @@ export const getAllProducts = async (): Promise<Product[]> => {
     const response = await api.get<ProductResponse>('/products');
     return response.data.data as Product[];
   } catch (error) {
+    console.error('Error fetching all products:', error);
     throw error;
   }
 };

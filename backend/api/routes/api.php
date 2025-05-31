@@ -4,6 +4,7 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\ProductController;
+use App\Http\Controllers\API\PaymentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -56,6 +57,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::put('/orders/{id}', [OrderController::class, 'update']);
     Route::post('/orders/{id}/cancel', [OrderController::class, 'cancel']);
+
+    // Payment routes using Cashier
+    Route::post('/payment/create-intent', [PaymentController::class, 'createPaymentIntent']);
+    Route::post('/payment/process', [PaymentController::class, 'processPayment']);
 });
 
 // Handle preflight requests for CORS

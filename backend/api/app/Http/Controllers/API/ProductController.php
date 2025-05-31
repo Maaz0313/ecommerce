@@ -12,10 +12,20 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $products = Product::with('category')->get();
+            $query = Product::with('category');
+
+            // Filter by featured products if requested
+            if ($request->has('featured') && $request->get('featured') === 'true') {
+                $query->where('featured', true);
+            }
+
+            // Filter by active products only
+            $query->where('is_active', true);
+
+            $products = $query->get();
 
             return response()->json([
                 'success' => true,

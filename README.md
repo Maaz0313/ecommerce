@@ -31,8 +31,9 @@ This project is currently under active development. New features are being added
 
 ### Checkout Process
 
-- Secure checkout flow
-- Multiple payment method options
+- Secure checkout flow with Laravel Cashier
+- Stripe credit/debit card payment processing
+- Multiple payment method options (Credit Card, PayPal, Cash on Delivery)
 - Order summary before confirmation
 - Order confirmation page
 
@@ -72,6 +73,7 @@ The following features are planned for future development:
 - MySQL database
 - RESTful API architecture
 - Laravel Sanctum for authentication
+- Laravel Cashier for Stripe payment processing
 
 ### Frontend
 

@@ -7,10 +7,10 @@ export interface CategoryResponse {
   message?: string;
 }
 
-export const getAllCategories = async (): Promise<Category[]> => {
+export const getAllCategories = async (): Promise<CategoryResponse> => {
   try {
     const response = await api.get<CategoryResponse>('/categories');
-    return response.data.data as Category[];
+    return response.data;
   } catch (error) {
     throw error;
   }
@@ -31,6 +31,7 @@ export const getCategoryBySlug = async (slug: string): Promise<Category> => {
 
     return category;
   } catch (error) {
+    console.error('Error fetching category by slug:', error);
     throw error;
   }
 };
