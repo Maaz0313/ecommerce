@@ -1,12 +1,24 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { ShoppingCartIcon, UserIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
-import { AuthService, CartService } from '../services';
-import CsrfToken from '../components/CsrfToken';
-import VerificationNotice from '../components/VerificationNotice';
-import { refreshUserData as refreshUserDataUtil, addStorageEventListeners } from '../utils/auth-utils';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import {
+  ShoppingCartIcon,
+  UserIcon,
+  Bars3Icon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import { AuthService, CartService } from "../services";
+import CsrfToken from "../components/CsrfToken";
+import VerificationNotice from "../components/VerificationNotice";
+import NavigationProgress from "../components/NavigationProgress";
+import SimpleNavigationProgress from "../components/SimpleNavigationProgress";
+import ProgressLink from "../components/ProgressLink";
+
+import {
+  refreshUserData as refreshUserDataUtil,
+  addStorageEventListeners,
+} from "../utils/auth-utils";
 
 interface ClientLayoutProps {
   children: React.ReactNode;
@@ -49,13 +61,13 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   const refreshUserData = async () => {
     try {
       if (AuthService.isAuthenticated()) {
-        console.log('Refreshing user data from backend...');
+        console.log("Refreshing user data from backend...");
         // Use the shared utility function
         await refreshUserDataUtil();
         updateAuthState();
       }
     } catch (error) {
-      console.error('Failed to refresh user data:', error);
+      console.error("Failed to refresh user data:", error);
       // Still update from localStorage even if API call fails
       updateAuthState();
     }
@@ -90,11 +102,20 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   const handleLogout = async () => {
     await AuthService.logout();
     setIsAuthenticated(false);
-    window.location.href = '/login';
+    window.location.href = "/login";
   };
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Navigation Progress Bar */}
+      <NavigationProgress
+        color="#4f46e5"
+        height={3}
+        showSpinner={false}
+        delay={100}
+        minDuration={300}
+      />
+
       {/* CSRF Token Component */}
       <CsrfToken />
 
@@ -104,49 +125,55 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
           <div className="flex justify-between h-16">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
-                <Link href="/" className="text-2xl font-bold text-indigo-600">
+                <ProgressLink
+                  href="/"
+                  className="text-2xl font-bold text-indigo-600"
+                >
                   EcommerceApp
-                </Link>
+                </ProgressLink>
               </div>
               <nav className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                <Link
+                <ProgressLink
                   href="/"
                   className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                 >
                   Home
-                </Link>
-                <Link
+                </ProgressLink>
+                <ProgressLink
                   href="/products"
                   className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                 >
                   Products
-                </Link>
-                <Link
+                </ProgressLink>
+                <ProgressLink
                   href="/categories"
                   className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                 >
                   Categories
-                </Link>
+                </ProgressLink>
               </nav>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
-              <Link href="/cart" className="relative p-1 rounded-full text-gray-400 hover:text-gray-500">
+              <ProgressLink
+                href="/cart"
+                className="relative p-1 rounded-full text-gray-400 hover:text-gray-500"
+              >
                 <ShoppingCartIcon className="h-6 w-6" aria-hidden="true" />
                 {cartItemCount > 0 && (
                   <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-indigo-600 rounded-full">
                     {cartItemCount}
                   </span>
                 )}
-              </Link>
+              </ProgressLink>
               {isAuthenticated ? (
                 <>
-                  <Link
+                  <ProgressLink
                     href="/profile"
                     className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50"
                   >
                     <UserIcon className="h-5 w-5 mr-2" aria-hidden="true" />
                     My Account
-                  </Link>
+                  </ProgressLink>
                   <button
                     onClick={handleLogout}
                     className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 cursor-pointer"
@@ -156,18 +183,18 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                 </>
               ) : (
                 <>
-                  <Link
+                  <ProgressLink
                     href="/login"
                     className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50"
                   >
                     Login
-                  </Link>
-                  <Link
+                  </ProgressLink>
+                  <ProgressLink
                     href="/register"
                     className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                   >
                     Register
-                  </Link>
+                  </ProgressLink>
                 </>
               )}
             </div>
@@ -191,43 +218,43 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
         {isMenuOpen && (
           <div className="sm:hidden">
             <div className="pt-2 pb-3 space-y-1">
-              <Link
+              <ProgressLink
                 href="/"
                 className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Home
-              </Link>
-              <Link
+              </ProgressLink>
+              <ProgressLink
                 href="/products"
                 className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Products
-              </Link>
-              <Link
+              </ProgressLink>
+              <ProgressLink
                 href="/categories"
                 className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Categories
-              </Link>
-              <Link
+              </ProgressLink>
+              <ProgressLink
                 href="/cart"
                 className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Cart ({cartItemCount})
-              </Link>
+              </ProgressLink>
               {isAuthenticated ? (
                 <>
-                  <Link
+                  <ProgressLink
                     href="/profile"
                     className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     My Account
-                  </Link>
+                  </ProgressLink>
                   <button
                     onClick={() => {
                       handleLogout();
@@ -240,20 +267,20 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                 </>
               ) : (
                 <>
-                  <Link
+                  <ProgressLink
                     href="/login"
                     className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Login
-                  </Link>
-                  <Link
+                  </ProgressLink>
+                  <ProgressLink
                     href="/register"
                     className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Register
-                  </Link>
+                  </ProgressLink>
                 </>
               )}
             </div>

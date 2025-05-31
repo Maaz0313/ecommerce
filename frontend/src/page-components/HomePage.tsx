@@ -9,7 +9,13 @@ import {
   Category,
 } from "../services";
 import { initializeApi } from "../services/api";
-import { ProductCard, CategoryCard, LoadingSpinner } from "../components";
+import {
+  ProductCard,
+  CategoryCard,
+  LoadingSpinner,
+  ProductCardSkeleton,
+  CategoryCardSkeleton,
+} from "../components";
 
 const HomePage: React.FC = () => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);

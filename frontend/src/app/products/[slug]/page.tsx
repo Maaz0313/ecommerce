@@ -4,6 +4,12 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ProductService, Product, CartService } from "../../../services";
+import {
+  SkeletonLine,
+  SkeletonCard,
+  SkeletonImage,
+  SkeletonText,
+} from "../../../components";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -52,8 +58,43 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      <div className="bg-white">
+        <div className="max-w-2xl mx-auto py-8 px-4 sm:px-6 lg:max-w-7xl lg:px-8">
+          <div className="lg:grid lg:grid-cols-2 lg:gap-x-8">
+            {/* Product image skeleton */}
+            <div className="lg:col-span-1">
+              <SkeletonImage height="24rem" className="rounded-lg" />
+            </div>
+
+            {/* Product details skeleton */}
+            <div className="mt-10 lg:mt-0 lg:col-span-1">
+              <SkeletonLine height="3rem" width="300px" className="mb-4" />
+              <SkeletonLine height="2rem" width="120px" className="mb-4" />
+
+              <div className="mt-4">
+                <SkeletonLine height="1rem" width="80px" className="mb-2" />
+                <SkeletonLine height="1.5rem" width="150px" className="mb-4" />
+              </div>
+
+              <div className="mt-4">
+                <SkeletonLine height="1rem" width="100px" className="mb-2" />
+                <SkeletonText lines={3} className="mb-4" />
+              </div>
+
+              <div className="mt-6">
+                <SkeletonLine height="1rem" width="120px" className="mb-2" />
+                <SkeletonLine height="2rem" width="200px" className="mb-6" />
+              </div>
+
+              <div className="mt-6">
+                <SkeletonLine height="1rem" width="80px" className="mb-2" />
+                <SkeletonLine height="2.5rem" width="80px" className="mb-8" />
+              </div>
+
+              <SkeletonLine height="3rem" width="100%" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

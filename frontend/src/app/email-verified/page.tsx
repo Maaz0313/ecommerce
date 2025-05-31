@@ -221,8 +221,18 @@ const EmailVerifiedPage: React.FC = () => {
           <div className="sm:mx-auto sm:w-full sm:max-w-md">
             <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
               <div className="flex justify-center items-center py-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-indigo-500 mr-2"></div>
-                <p className="text-sm text-gray-600">Loading...</p>
+                <div className="flex space-x-2">
+                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                  <div
+                    className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"
+                    style={{ animationDelay: "0.2s" }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"
+                    style={{ animationDelay: "0.4s" }}
+                  ></div>
+                </div>
+                <p className="text-sm text-gray-600 ml-3">Loading...</p>
               </div>
             </div>
           </div>

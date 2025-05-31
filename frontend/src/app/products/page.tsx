@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { ProductService, Product } from "../../services";
-import { ProductCard } from "../../components";
+import { ProductCard, ProductCardSkeleton } from "../../components";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -37,8 +37,13 @@ export default function ProductsPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">All Products</h1>
+        <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <ProductCardSkeleton key={index} />
+          ))}
+        </div>
       </div>
     );
   }

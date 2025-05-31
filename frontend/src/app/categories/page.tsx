@@ -2,7 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import { CategoryService, Category } from "../../services";
-import { CategoryCard } from "../../components";
+import {
+  CategoryCard,
+  SkeletonLine,
+  SkeletonCard,
+  SkeletonImage,
+} from "../../components";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -37,8 +42,17 @@ export default function CategoriesPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      <div>
+        <SkeletonLine height="2.5rem" width="180px" className="mb-6" />
+        <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <SkeletonCard key={index}>
+              <SkeletonImage height="8rem" className="mb-3" />
+              <SkeletonLine height="1.25rem" className="mb-2" />
+              <SkeletonLine width="60%" height="1rem" />
+            </SkeletonCard>
+          ))}
+        </div>
       </div>
     );
   }
