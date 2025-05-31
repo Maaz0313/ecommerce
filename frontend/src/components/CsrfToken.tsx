@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import api from '../services/api';
+import { useEffect } from "react";
+import axios from "axios";
 
 /**
  * Component to fetch CSRF token on initial load
@@ -11,10 +11,16 @@ export default function CsrfToken() {
     // Fetch CSRF token on initial load
     const fetchCsrfToken = async () => {
       try {
-        await api.get('/sanctum/csrf-cookie');
-        console.log('CSRF token fetched successfully');
+        // Use axios directly with no base URL to avoid /api prefix
+        await axios.get("/sanctum/csrf-cookie", {
+          withCredentials: true,
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        });
       } catch (error) {
-        console.error('Failed to fetch CSRF token:', error);
+        // Silently fail - CSRF token fetch is not critical for initial load
       }
     };
 

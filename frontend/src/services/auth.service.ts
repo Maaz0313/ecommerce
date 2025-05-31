@@ -1,4 +1,5 @@
 import api from './api';
+import axios from 'axios';
 
 export interface User {
   id: number;
@@ -36,10 +37,16 @@ const AuthService = {
   login: async (credentials: LoginCredentials): Promise<User> => {
     try {
       // First, get the CSRF cookie from Laravel Sanctum
-      await api.get('/sanctum/csrf-cookie');
+      await axios.get('/sanctum/csrf-cookie', {
+        withCredentials: true,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        }
+      });
 
       // Then make the login request
-      const response = await api.post<AuthResponse>('/api/login', credentials);
+      const response = await api.post<AuthResponse>('/login', credentials);
 
       if (response.data.success && response.data.data) {
         const { user, token } = response.data.data;
@@ -64,11 +71,16 @@ const AuthService = {
   register: async (data: RegisterData): Promise<User> => {
     try {
       // First, get the CSRF cookie from Laravel Sanctum
-      await api.get('/sanctum/csrf-cookie');
+      await axios.get('/sanctum/csrf-cookie', {
+        withCredentials: true,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        }
+      });
 
       // Then make the registration request
-      // The API route is /api/register because it's in api.php
-      const response = await api.post<AuthResponse>('/api/register', data);
+      const response = await api.post<AuthResponse>('/register', data);
 
       if (response.data.success && response.data.data) {
         const { user, token } = response.data.data;
@@ -93,10 +105,16 @@ const AuthService = {
   logout: async (): Promise<void> => {
     try {
       // First, get the CSRF cookie from Laravel Sanctum
-      await api.get('/sanctum/csrf-cookie');
+      await axios.get('/sanctum/csrf-cookie', {
+        withCredentials: true,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        }
+      });
 
       // Then make the logout request
-      await api.post('/api/logout');
+      await api.post('/logout');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
     } catch (error) {
@@ -138,12 +156,18 @@ const AuthService = {
       console.log('Attempting to resend verification email...');
 
       // First, get the CSRF cookie from Laravel Sanctum
-      const csrfResponse = await api.get('/sanctum/csrf-cookie');
+      const csrfResponse = await axios.get('/sanctum/csrf-cookie', {
+        withCredentials: true,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        }
+      });
       console.log('CSRF cookie response:', csrfResponse.status);
 
       // Then make the request to resend verification email
       console.log('Sending verification email request...');
-      const response = await api.post('/api/email/verification-notification');
+      const response = await api.post('/email/verification-notification');
       console.log('Verification email response:', response.status, response.data);
 
       return response.data;
@@ -161,7 +185,7 @@ const AuthService = {
       }
 
       // Get user data from the API
-      const response = await api.get('/api/user');
+      const response = await api.get('/user');
       console.log('Refresh user data response:', response.data);
 
       if (response.data && response.data.success && response.data.data && response.data.data.user) {

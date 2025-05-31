@@ -9,7 +9,7 @@ import {
   Category,
 } from "../services";
 import { initializeApi } from "../services/api";
-import { ProductCard, CategoryCard } from "../components";
+import { ProductCard, CategoryCard, LoadingSpinner } from "../components";
 
 const HomePage: React.FC = () => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -59,7 +59,7 @@ const HomePage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+        <LoadingSpinner size="lg" text="Loading products and categories..." />
       </div>
     );
   }
@@ -134,6 +134,10 @@ const HomePage: React.FC = () => {
             {featuredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
+          </div>
+        ) : loading ? (
+          <div className="flex justify-center py-8">
+            <LoadingSpinner size="md" text="Loading featured products..." />
           </div>
         ) : (
           <p className="text-gray-500">No featured products available.</p>

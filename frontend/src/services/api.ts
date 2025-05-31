@@ -13,17 +13,21 @@ const api = axios.create({
     }
 });
 
+// Create a separate axios instance for Sanctum routes (no /api prefix)
+const sanctumApi = axios.create({
+    baseURL: 'localhost:8000',
+    withCredentials: true,
+    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+    }
+});
+
 // Function to fetch CSRF token
 const fetchCSRFToken = async () => {
     try {
-        // Use a separate axios instance for Sanctum routes
-        await axios.get('/sanctum/csrf-cookie', {
-            withCredentials: true,
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            }
-        });
+        // Use the sanctum-specific axios instance
+        await sanctumApi.get('/sanctum/csrf-cookie');
         return true;
     } catch (error: any) {
         return false;
