@@ -43,7 +43,7 @@ const CartService = {
     }
 
     // Recalculate total
-    cart.total = cart.items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+    cart.total = cart.items.reduce((sum, item) => sum + (Number(item.product.price) * item.quantity), 0);
     
     CartService.saveCart(cart);
     return cart;
@@ -63,7 +63,7 @@ const CartService = {
       }
 
       // Recalculate total
-      cart.total = cart.items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+      cart.total = cart.items.reduce((sum, item) => sum + (Number(item.product.price) * item.quantity), 0);
       
       CartService.saveCart(cart);
     }
@@ -79,7 +79,7 @@ const CartService = {
       cart.items.splice(itemIndex, 1);
       
       // Recalculate total
-      cart.total = cart.items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+      cart.total = cart.items.reduce((sum, item) => sum + (Number(item.product.price) * item.quantity), 0);
       
       CartService.saveCart(cart);
     }

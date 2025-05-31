@@ -51,9 +51,18 @@ class PaymentController extends Controller
             // Convert to cents for Stripe (Cashier expects amounts in cents)
             $amountInCents = (int) ($totalAmount * 100);
 
-            // Create payment intent using Cashier
-            $paymentIntent = $user->createPaymentIntent($amountInCents, [
+            // Ensure user has a Stripe customer ID
+            if (!$user->hasStripeId()) {
+                $user->createAsStripeCustomer();
+            }
+
+            // Create payment intent using Cashier's pay method
+            $paymentIntent = $user->pay($amountInCents, [
                 'currency' => 'usd',
+                'automatic_payment_methods' => [
+                    'enabled' => true,
+                ],
+                'return_url' => config('app.frontend_url', 'http://localhost:3000') . '/checkout/success',
                 'metadata' => [
                     'items' => json_encode($items),
                 ],
@@ -117,22 +126,64 @@ class PaymentController extends Controller
             // Convert to cents for Stripe
             $amountInCents = (int) ($totalAmount * 100);
 
-            // Process payment using Cashier
-            $payment = $user->charge($amountInCents, $request->payment_method_id, [
+            // Ensure user has a Stripe customer ID
+            if (!$user->hasStripeId()) {
+                $user->createAsStripeCustomer();
+            }
+
+            // Create and confirm payment intent using Cashier's pay method
+            $paymentIntent = $user->pay($amountInCents, [
                 'currency' => 'usd',
+                'payment_method' => $request->payment_method_id,
+                'confirm' => true,
+                'automatic_payment_methods' => [
+                    'enabled' => true,
+                ],
+                'return_url' => config('app.frontend_url', 'http://localhost:3000') . '/checkout/success',
                 'metadata' => [
                     'items' => json_encode($items),
                 ],
             ]);
 
+            // Check if payment requires additional action
+            if ($paymentIntent->status === 'requires_action') {
+                return response()->json([
+                    'success' => false,
+                    'requires_action' => true,
+                    'payment_intent' => [
+                        'id' => $paymentIntent->id,
+                        'client_secret' => $paymentIntent->client_secret,
+                    ],
+                    'message' => 'Payment requires additional confirmation.'
+                ], 422);
+            }
+
+            // Check if payment failed
+            if ($paymentIntent->status !== 'succeeded') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Payment failed. Please try again.',
+                ], 422);
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Payment processed successfully',
-                'payment_intent' => $payment->id,
+                'payment_intent' => $paymentIntent->id,
                 'amount' => $totalAmount,
                 'items' => $items
             ]);
 
+        } catch (\Laravel\Cashier\Exceptions\IncompletePayment $e) {
+            return response()->json([
+                'success' => false,
+                'requires_action' => true,
+                'payment_intent' => [
+                    'id' => $e->payment->id,
+                    'client_secret' => $e->payment->client_secret,
+                ],
+                'message' => 'Payment requires additional confirmation.'
+            ], 422);
         } catch (\Exception $e) {
             Log::error('Payment Processing Error: ' . $e->getMessage());
             return response()->json([

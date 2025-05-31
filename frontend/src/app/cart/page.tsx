@@ -1,13 +1,16 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { CartService, CartItem, AuthService } from '../../services';
-import { TrashIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { CartService, CartItem, AuthService } from "../../services";
+import { TrashIcon } from "@heroicons/react/24/outline";
 
 export default function CartPage() {
-  const [cart, setCart] = useState<{ items: CartItem[], total: number }>({ items: [], total: 0 });
+  const [cart, setCart] = useState<{ items: CartItem[]; total: number }>({
+    items: [],
+    total: 0,
+  });
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
 
@@ -22,23 +25,23 @@ export default function CartPage() {
     const updatedCart = CartService.updateQuantity(productId, quantity);
     setCart(updatedCart);
     // Trigger storage event to update cart count in Layout
-    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new Event("storage"));
   };
 
   const handleRemoveItem = (productId: number) => {
     const updatedCart = CartService.removeFromCart(productId);
     setCart(updatedCart);
     // Trigger storage event to update cart count in Layout
-    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new Event("storage"));
   };
 
   const handleCheckout = () => {
     if (!AuthService.isAuthenticated()) {
-      router.push('/login');
+      router.push("/login");
       return;
     }
-    
-    router.push('/checkout');
+
+    router.push("/checkout");
   };
 
   if (loading) {
@@ -67,12 +70,15 @@ export default function CartPage() {
   return (
     <div>
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Your Cart</h1>
-      
+
       <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
         <div className="border-t border-gray-200">
           <dl>
             {cart.items.map((item) => (
-              <div key={item.product_id} className="bg-white px-4 py-5 sm:grid sm:grid-cols-6 sm:gap-4 sm:px-6 border-b border-gray-200">
+              <div
+                key={item.product_id}
+                className="bg-white px-4 py-5 sm:grid sm:grid-cols-6 sm:gap-4 sm:px-6 border-b border-gray-200"
+              >
                 <dt className="text-sm font-medium text-gray-500 sm:col-span-2">
                   <div className="flex items-center">
                     {item.product.image ? (
@@ -87,15 +93,21 @@ export default function CartPage() {
                       </div>
                     )}
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900">{item.product.name}</h3>
-                      <p className="text-sm text-gray-500">${item.product.price.toFixed(2)} each</p>
+                      <h3 className="text-lg font-medium text-gray-900">
+                        {item.product.name}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        ${Number(item.product.price).toFixed(2)} each
+                      </p>
                     </div>
                   </div>
                 </dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-1">
                   <div className="flex items-center">
                     <button
-                      onClick={() => handleUpdateQuantity(item.product_id, item.quantity - 1)}
+                      onClick={() =>
+                        handleUpdateQuantity(item.product_id, item.quantity - 1)
+                      }
                       className="p-1 rounded-md border border-gray-300 text-gray-700"
                       disabled={item.quantity <= 1}
                     >
@@ -103,7 +115,9 @@ export default function CartPage() {
                     </button>
                     <span className="mx-2">{item.quantity}</span>
                     <button
-                      onClick={() => handleUpdateQuantity(item.product_id, item.quantity + 1)}
+                      onClick={() =>
+                        handleUpdateQuantity(item.product_id, item.quantity + 1)
+                      }
                       className="p-1 rounded-md border border-gray-300 text-gray-700"
                       disabled={item.quantity >= item.product.quantity}
                     >
@@ -114,7 +128,7 @@ export default function CartPage() {
                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                   <div className="text-right">
                     <p className="text-lg font-medium text-gray-900">
-                      ${(item.product.price * item.quantity).toFixed(2)}
+                      ${(Number(item.product.price) * item.quantity).toFixed(2)}
                     </p>
                   </div>
                 </dd>
@@ -137,8 +151,12 @@ export default function CartPage() {
       <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
         <div className="px-4 py-5 sm:p-6">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">Order Summary</h3>
-            <p className="text-2xl font-bold text-gray-900">${cart.total.toFixed(2)}</p>
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              Order Summary
+            </h3>
+            <p className="text-2xl font-bold text-gray-900">
+              ${Number(cart.total).toFixed(2)}
+            </p>
           </div>
         </div>
       </div>

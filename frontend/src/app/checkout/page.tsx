@@ -176,12 +176,12 @@ export default function CheckoutPage() {
       return;
     }
 
-    // For credit card payments, the form submission is handled by Stripe
-    if (paymentMethod === "credit_card") {
-      return; // Stripe form will handle the submission
+    // This function only handles cash on delivery payments
+    // Credit card payments are handled by the Stripe form
+    if (paymentMethod !== "cash") {
+      return;
     }
 
-    // For other payment methods, create order directly
     try {
       setSubmitting(true);
       await handleOrderCreation();
@@ -236,7 +236,7 @@ export default function CheckoutPage() {
                 Shipping Information
               </h2>
 
-              <form onSubmit={handleSubmit}>
+              <div>
                 <div className="grid grid-cols-6 gap-6">
                   <div className="col-span-6">
                     <label
@@ -468,23 +468,25 @@ export default function CheckoutPage() {
                   />
                 </div>
 
-                {/* Submit button - only show for non-credit card payments */}
-                {paymentMethod !== "credit_card" && (
-                  <div className="mt-8 flex justify-end">
-                    <Link
-                      href="/cart"
-                      className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 mr-4"
-                    >
-                      Back to Cart
-                    </Link>
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
-                    >
-                      {submitting ? "Processing..." : "Place Order"}
-                    </button>
-                  </div>
+                {/* Cash on Delivery Form */}
+                {paymentMethod === "cash" && (
+                  <form onSubmit={handleSubmit} className="mt-8">
+                    <div className="flex justify-end">
+                      <Link
+                        href="/cart"
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 mr-4"
+                      >
+                        Back to Cart
+                      </Link>
+                      <button
+                        type="submit"
+                        disabled={submitting}
+                        className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
+                      >
+                        {submitting ? "Processing..." : "Place Order"}
+                      </button>
+                    </div>
+                  </form>
                 )}
 
                 {/* Back to cart link for credit card payments */}
@@ -498,7 +500,7 @@ export default function CheckoutPage() {
                     </Link>
                   </div>
                 )}
-              </form>
+              </div>
             </div>
           </div>
         </div>
@@ -538,9 +540,9 @@ export default function CheckoutPage() {
                               <h3>{item.product.name}</h3>
                               <p className="ml-4">
                                 $
-                                {(item.product.price * item.quantity).toFixed(
-                                  2
-                                )}
+                                {(
+                                  Number(item.product.price) * item.quantity
+                                ).toFixed(2)}
                               </p>
                             </div>
                           </div>
@@ -557,7 +559,7 @@ export default function CheckoutPage() {
               <div className="border-t border-gray-200 pt-4 mt-4">
                 <div className="flex justify-between text-base font-medium text-gray-900">
                   <p>Subtotal</p>
-                  <p>${cart.total.toFixed(2)}</p>
+                  <p>${Number(cart.total).toFixed(2)}</p>
                 </div>
                 <p className="mt-0.5 text-sm text-gray-500">
                   Shipping and taxes calculated at checkout.
@@ -567,7 +569,7 @@ export default function CheckoutPage() {
               <div className="border-t border-gray-200 pt-4 mt-4">
                 <div className="flex justify-between text-lg font-bold text-gray-900">
                   <p>Total</p>
-                  <p>${cart.total.toFixed(2)}</p>
+                  <p>${Number(cart.total).toFixed(2)}</p>
                 </div>
               </div>
             </div>
