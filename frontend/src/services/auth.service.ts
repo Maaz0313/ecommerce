@@ -1,4 +1,4 @@
-import api from './api';
+import api, { resetApiInitialization } from './api';
 import axios from 'axios';
 
 export interface User {
@@ -117,11 +117,25 @@ const AuthService = {
       await api.post('/logout');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      localStorage.removeItem('lastUserRefresh');
+      localStorage.removeItem('cachedFeaturedProducts');
+      localStorage.removeItem('cachedCategories');
+      localStorage.removeItem('lastHomepageFetch');
+
+      // Reset API initialization state
+      resetApiInitialization();
     } catch (error) {
       console.error('Logout error:', error);
       // Still remove items even if API call fails
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      localStorage.removeItem('lastUserRefresh');
+      localStorage.removeItem('cachedFeaturedProducts');
+      localStorage.removeItem('cachedCategories');
+      localStorage.removeItem('lastHomepageFetch');
+
+      // Reset API initialization state
+      resetApiInitialization();
     }
   },
 

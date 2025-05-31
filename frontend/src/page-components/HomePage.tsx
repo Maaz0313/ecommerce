@@ -28,7 +28,28 @@ const HomePage: React.FC = () => {
       try {
         setLoading(true);
 
-        // Initialize API first
+        // Check if we have cached data that's still fresh (5 minutes)
+        const cachedProducts = localStorage.getItem("cachedFeaturedProducts");
+        const cachedCategories = localStorage.getItem("cachedCategories");
+        const lastFetch = localStorage.getItem("lastHomepageFetch");
+        const now = Date.now();
+        const fiveMinutes = 5 * 60 * 1000;
+
+        if (
+          cachedProducts &&
+          cachedCategories &&
+          lastFetch &&
+          now - parseInt(lastFetch) < fiveMinutes
+        ) {
+          // Use cached data
+          setFeaturedProducts(JSON.parse(cachedProducts));
+          setCategories(JSON.parse(cachedCategories));
+          setError(null);
+          setLoading(false);
+          return;
+        }
+
+        // Initialize API first (only if not already initialized)
         await initializeApi();
 
         const [productsData, categoriesData] = await Promise.all([
@@ -38,17 +59,28 @@ const HomePage: React.FC = () => {
 
         // Safely access the data arrays
         if (productsData && productsData.data) {
-          setFeaturedProducts(
-            Array.isArray(productsData.data) ? productsData.data : []
+          const products = Array.isArray(productsData.data)
+            ? productsData.data
+            : [];
+          setFeaturedProducts(products);
+          // Cache the data
+          localStorage.setItem(
+            "cachedFeaturedProducts",
+            JSON.stringify(products)
           );
         }
 
         if (categoriesData && categoriesData.data) {
-          setCategories(
-            Array.isArray(categoriesData.data) ? categoriesData.data : []
-          );
+          const cats = Array.isArray(categoriesData.data)
+            ? categoriesData.data
+            : [];
+          setCategories(cats);
+          // Cache the data
+          localStorage.setItem("cachedCategories", JSON.stringify(cats));
         }
 
+        // Update last fetch time
+        localStorage.setItem("lastHomepageFetch", now.toString());
         setError(null);
       } catch (err: any) {
         setError("Failed to load data. Please try again later.");

@@ -60,14 +60,43 @@ api.interceptors.response.use(
     }
 );
 
+// Track if API has been initialized to avoid repeated CSRF token fetches
+let isApiInitialized = false;
+let initializationPromise: Promise<boolean> | null = null;
+
 // Initialize API by fetching CSRF token
 export const initializeApi = async () => {
-    try {
-        await fetchCSRFToken();
+    // If already initialized, return immediately
+    if (isApiInitialized) {
         return true;
-    } catch (error: any) {
-        return false;
     }
+
+    // If initialization is in progress, wait for it
+    if (initializationPromise) {
+        return initializationPromise;
+    }
+
+    // Start initialization
+    initializationPromise = (async () => {
+        try {
+            await fetchCSRFToken();
+            isApiInitialized = true;
+            return true;
+        } catch (error: any) {
+            console.error('Failed to initialize API:', error);
+            return false;
+        } finally {
+            initializationPromise = null;
+        }
+    })();
+
+    return initializationPromise;
+};
+
+// Reset API initialization state (useful for logout)
+export const resetApiInitialization = () => {
+    isApiInitialized = false;
+    initializationPromise = null;
 };
 
 export default api;

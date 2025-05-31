@@ -33,9 +33,9 @@ export default function CheckoutPage() {
   const [shippingCountry, setShippingCountry] = useState<string>("");
   const [shippingZipCode, setShippingZipCode] = useState<string>("");
   const [shippingPhone, setShippingPhone] = useState<string>("");
-  const [paymentMethod, setPaymentMethod] = useState<
-    "cash" | "credit_card" | "paypal"
-  >("credit_card");
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "credit_card">(
+    "credit_card"
+  );
   const [notes, setNotes] = useState<string>("");
 
   // Form validation
@@ -78,9 +78,7 @@ export default function CheckoutPage() {
     return Object.keys(errors).length === 0;
   };
 
-  const handlePaymentMethodChange = (
-    method: "cash" | "credit_card" | "paypal"
-  ) => {
+  const handlePaymentMethodChange = (method: "cash" | "credit_card") => {
     setPaymentMethod(method);
   };
 
@@ -413,23 +411,6 @@ export default function CheckoutPage() {
                         className="ml-3 block text-sm font-medium text-gray-700"
                       >
                         Credit Card
-                      </label>
-                    </div>
-
-                    <div className="flex items-center">
-                      <input
-                        id="payment-paypal"
-                        name="payment-method"
-                        type="radio"
-                        checked={paymentMethod === "paypal"}
-                        onChange={() => handlePaymentMethodChange("paypal")}
-                        className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
-                      />
-                      <label
-                        htmlFor="payment-paypal"
-                        className="ml-3 block text-sm font-medium text-gray-700"
-                      >
-                        PayPal
                       </label>
                     </div>
 

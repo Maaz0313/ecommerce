@@ -66,16 +66,40 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
         await refreshUserDataUtil();
         updateAuthState();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to refresh user data:", error);
-      // Still update from localStorage even if API call fails
+
+      // If it's a 401 error, the user is no longer authenticated
+      if (error?.response?.status === 401) {
+        console.log("User session expired, clearing authentication");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("lastUserRefresh");
+        updateAuthState();
+        return;
+      }
+
+      // For other errors, still update from localStorage
       updateAuthState();
     }
   };
 
   useEffect(() => {
-    // Initial update of authentication state and refresh from backend
-    refreshUserData();
+    // Initial update of authentication state from localStorage only
+    updateAuthState();
+
+    // Only refresh from backend if user is authenticated and we don't have recent data
+    const lastRefresh = localStorage.getItem("lastUserRefresh");
+    const now = Date.now();
+    const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+    if (
+      AuthService.isAuthenticated() &&
+      (!lastRefresh || now - parseInt(lastRefresh) > fiveMinutes)
+    ) {
+      refreshUserData();
+      localStorage.setItem("lastUserRefresh", now.toString());
+    }
 
     // Add event listener for cart updates and auth changes
     const handleStorageChange = () => {
@@ -83,12 +107,20 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       updateAuthState();
     };
 
-    // Set up an interval to periodically refresh user data
+    // Set up an interval to periodically refresh user data (less frequently)
     const refreshInterval = setInterval(() => {
-      if (AuthService.isAuthenticated()) {
+      const lastRefresh = localStorage.getItem("lastUserRefresh");
+      const now = Date.now();
+      const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
+
+      if (
+        AuthService.isAuthenticated() &&
+        (!lastRefresh || now - parseInt(lastRefresh) > tenMinutes)
+      ) {
         refreshUserData();
+        localStorage.setItem("lastUserRefresh", now.toString());
       }
-    }, 60000); // Refresh every minute
+    }, 300000); // Check every 5 minutes instead of every minute
 
     // Set up event listeners using the shared utility function
     const cleanup = addStorageEventListeners(handleStorageChange);

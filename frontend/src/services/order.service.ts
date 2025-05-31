@@ -18,7 +18,7 @@ export interface Order {
   user_id: number;
   total_amount: number;
   status: 'pending' | 'processing' | 'completed' | 'canceled';
-  payment_method: 'cash' | 'credit_card' | 'paypal';
+  payment_method: 'cash';
   payment_status: 'pending' | 'paid' | 'failed';
   shipping_address: string;
   shipping_city: string;
@@ -51,7 +51,7 @@ export interface CreateOrderData {
   shipping_country: string;
   shipping_zip_code: string;
   shipping_phone: string;
-  payment_method: 'cash' | 'credit_card' | 'paypal';
+  payment_method: 'cash' | 'credit_card';
   notes?: string;
   items: {
     product_id: number;

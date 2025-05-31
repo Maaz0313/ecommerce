@@ -38,7 +38,7 @@ class OrderController extends Controller
             'shipping_country' => 'required|string',
             'shipping_zip_code' => 'required|string',
             'shipping_phone' => 'required|string',
-            'payment_method' => 'required|string|in:cash,credit_card,paypal',
+            'payment_method' => 'required|string|in:cash,credit_card',
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',

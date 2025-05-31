@@ -33,7 +33,7 @@ This project is currently under active development. New features are being added
 
 - Secure checkout flow with Laravel Cashier
 - Stripe credit/debit card payment processing
-- Multiple payment method options (Credit Card, PayPal, Cash on Delivery)
+- Multiple payment method options (Credit Card, Cash on Delivery)
 - Order summary before confirmation
 - Order confirmation page
 
